@@ -166,6 +166,7 @@ def list_enriched_details(data: dict, result_id, container_name, environment, zo
         case _:
             host_or_container = 'unknown'
 
+    result['deploymentName'] = base_name
     result['environment'] = environment
     result['name'] = host_or_container
     result['resultId'] = result_id
