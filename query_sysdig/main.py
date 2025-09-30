@@ -1,14 +1,11 @@
 import logging
 import sys
-from json import dumps
-from typing import Generator, Optional, Union
+from typing import Generator, Optional
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.logging.decorators import timed_generator
 from ownjoo_utils.parsing.consts import TimeFormats
 from ownjoo_utils.parsing.types import get_value
-from urllib3 import Retry
-
 from query_sysdig.consts import (
     BACK_OFF, BASE_URL, CVE_ID_PATTERN, DELAY, LOG_PROGRESS, LOG_PROGRESS_INTERVAL,
     MAX_DELAY, PAGE_SIZE, RETRY_COUNT, RETRY_ON, UUID_PATTERN, UUID_REX,
@@ -16,6 +13,7 @@ from query_sysdig.consts import (
 from requests import Response, Session
 from requests.exceptions import HTTPError
 from retry import retry
+from urllib3 import Retry
 
 logging.basicConfig(
     format=LOG_FORMAT,
@@ -232,13 +230,13 @@ def main(
 ) -> Generator[dict, None, None]:
     global session
     session = Session()
-    retry: Retry = Retry(
+    retries: Retry = Retry(
         total=3,
         backoff_factor=0.1,
         status_forcelist=[502, 503, 504],
     )
     for scheme, adapter in session.adapters.items():
-        adapter.max_retries = retry
+        adapter.max_retries = retries
 
     if isinstance(proxies, dict):
         session.proxies = proxies
