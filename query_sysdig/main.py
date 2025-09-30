@@ -8,7 +8,7 @@ from ownjoo_utils.parsing.consts import TimeFormats
 from ownjoo_utils.parsing.types import get_value
 from query_sysdig.consts import (
     BACK_OFF, BASE_URL, CVE_ID_PATTERN, DELAY, LOG_PROGRESS, LOG_PROGRESS_INTERVAL,
-    MAX_DELAY, PAGE_SIZE, RETRY_COUNT, RETRY_ON, UUID_PATTERN, UUID_REX,
+    MAX_DELAY, PAGE_SIZE, REQ_TIMEOUT, RETRY_COUNT, RETRY_ON, UUID_PATTERN, UUID_REX,
 )
 from requests import Response, Session
 from requests.exceptions import HTTPError
@@ -36,7 +36,7 @@ def get_response(
 ) -> Optional[dict]:
     """Fetch URL with retries on failure, including exponential backoff."""
     try:
-        r: Response = session.request(method=method, url=url, data=data, json=json, params=params, timeout=30)
+        r: Response = session.request(method=method, url=url, data=data, json=json, params=params, timeout=REQ_TIMEOUT)
         r.raise_for_status()
         return r.json()
     except Exception as exc_http:

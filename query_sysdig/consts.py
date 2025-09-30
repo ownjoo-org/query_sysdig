@@ -9,6 +9,7 @@ BACK_OFF: int = 2
 DELAY: int = 1
 MAX_DELAY: int = 30
 PAGE_SIZE: int = 1000
+REQ_TIMEOUT: float = 30.0
 RETRY_COUNT: int = 3
 RETRY_ON: tuple = (
     requests.ConnectionError,
