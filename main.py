@@ -16,11 +16,12 @@ if __name__ == '__main__':
         dest='api_key',
     )
     parser.add_argument(
-        '--domain',
-        default='example.com',
+        '--base-url',
+        default='http://example.com:8080',
         type=str,
         required=False,
-        help='The FQDN for your API (not full URL)',
+        help='The base URL for you sysdig (or test) endpoint',
+        dest='base_url',
     )
     parser.add_argument(
         '--proxies',
@@ -41,7 +42,7 @@ if __name__ == '__main__':
             )
 
     print('[')
-    for result in main(domain=args.domain, api_key=args.api_key, proxies=proxies):
+    for result in main(base_url=args.base_url, api_key=args.api_key, proxies=proxies):
         if result:
             print(f'{json.dumps(result)},')
     print(']')
