@@ -1,6 +1,6 @@
 import re
 
-from requests import HTTPError
+import requests
 
 BASE_URL = "https://api.sysdig.com"
 
@@ -11,7 +11,9 @@ MAX_DELAY: int = 30
 PAGE_SIZE: int = 1000
 RETRY_COUNT: int = 3
 RETRY_ON: tuple = (
-    HTTPError,
+    requests.ConnectionError,
+    requests.RequestException,
+    requests.Timeout,
 )
 
 # logging

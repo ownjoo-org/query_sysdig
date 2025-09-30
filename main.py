@@ -40,13 +40,8 @@ if __name__ == '__main__':
                 f'WARNING: failure parsing proxies: {exc_json}: proxies provided: {proxies}'
             )
 
-    result = main(
-        domain=args.domain,
-        api_key=args.api_key,
-        proxies=proxies,
-    )
-
-    if result:
-        print(json.dumps(result, indent=4))
-    else:
-        print('No results found')
+    print('[')
+    for result in main(domain=args.domain, api_key=args.api_key, proxies=proxies):
+        if result:
+            print(f'{json.dumps(result)},')
+    print(']')

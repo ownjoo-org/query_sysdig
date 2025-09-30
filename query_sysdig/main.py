@@ -1,11 +1,14 @@
 import logging
 import sys
+from json import dumps
 from typing import Generator, Optional, Union
 
 from ownjoo_utils.logging.consts import LOG_FORMAT
 from ownjoo_utils.logging.decorators import timed_generator
 from ownjoo_utils.parsing.consts import TimeFormats
 from ownjoo_utils.parsing.types import get_value
+from urllib3 import Retry
+
 from query_sysdig.consts import (
     BACK_OFF, BASE_URL, CVE_ID_PATTERN, DELAY, LOG_PROGRESS, LOG_PROGRESS_INTERVAL,
     MAX_DELAY, PAGE_SIZE, RETRY_COUNT, RETRY_ON, UUID_PATTERN, UUID_REX,
@@ -26,7 +29,7 @@ session: Optional[Session] = None
 
 
 @retry(exceptions=RETRY_ON, tries=RETRY_COUNT, delay=DELAY, backoff=BACK_OFF, max_delay=MAX_DELAY, logger=logger)
-def request_with_retry(
+def get_response(
         url: str,
         method: str = 'GET',
         params=None,
@@ -45,6 +48,7 @@ def request_with_retry(
                 f'{exc_http.response.status_code=}\n'
                 f'{exc_http.request.url=}\n'
             )
+        raise
 
 
 # @timed_generator(log_progress=False, logger=logger)
@@ -56,10 +60,7 @@ def list_results_paginated(url: str, additional_params: Optional[dict] = None) -
 
     should_continue: bool = True
     while should_continue:
-        data: dict = request_with_retry(
-            url=url,
-            params=params,
-        )
+        data: dict = get_response(url=url, params=params)
         yield from get_value(src=data, path=['data'], exp=list, default=[])
         params['cursor'] = get_value(src=data, path=['page', 'next'], exp=str)
         should_continue = bool(get_value(src=params, path=['cursor'], exp=str))
@@ -94,7 +95,7 @@ def list_host_results(url: str = BASE_URL) -> Generator[dict, None, None]:
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
 def fetch_result_details(url: str = BASE_URL, result_id: str = '') -> Generator[dict, None, None]:
     """Fetch detailed information for a specific result ID."""
-    yield request_with_retry(
+    yield get_response(
         url=f'{url}/secure/vulnerability/v1/results/{result_id}',
     )
 
@@ -145,12 +146,40 @@ def list_parsed_cves(data: dict, result_id, container_name, environment, zone) -
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
+def list_enriched_details(data: dict, result_id, container_name, environment, zone) -> Generator[dict, None, None]:
+    """Parse the vulnerability data and extract the relevant information."""
+
+    base_name: str = container_name.rsplit('_', 1)[0]
+    result: dict = get_value(src=data, path=['result'], exp=dict, default={})
+    asset_type: str = get_value(src=data, path=['result', 'type'], exp=str)
+    if not asset_type:
+        asset_type: str = get_value(src=data, path=['result', 'assetType'], exp=str)
+
+    host_or_container: Optional[str] = None
+    match asset_type:
+        case 'host':
+            host_or_container = get_value(src=result, path=['metadata', 'hostName'], exp=str, default='unknown')
+        case 'container':
+            host_or_container = get_value(src=result, path=['metadata', 'pullString'], exp=str, default='unknown')
+        case 'containerImage':
+            host_or_container = get_value(src=result, path=['metadata', 'pullString'], exp=str, default='unknown')
+        case _:
+            host_or_container = 'unknown'
+
+    result['name'] = host_or_container
+    result['environment'] = environment
+    result['zone'] = zone
+    yield result
+
+
+@timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
 def process_result(url, result_id, container_name, environment, zone) -> Generator[dict, None, None]:
     """Process a single result and return parsed CVE data."""
     try:
         # yield from fetch_result_details(url=url, result_id=result_id)
-        for result in  fetch_result_details(url=url, result_id=result_id):
-            yield from list_parsed_cves(result, result_id, container_name, environment, zone)
+        for result in fetch_result_details(url=url, result_id=result_id):
+            # yield from list_parsed_cves(result, result_id, container_name, environment, zone)
+            yield from list_enriched_details(result, result_id, container_name, environment, zone)
     except Exception as e:
         logging.error(f"Error processing result ID {result_id}: {e}")
 
@@ -201,6 +230,13 @@ def main(
 ) -> Union[None, str, list, dict]:
     global session
     session = Session()
+    retry: Retry = Retry(
+        total=3,
+        backoff_factor=0.1,
+        status_forcelist=[502, 503, 504],
+    )
+    for scheme, adapter in session.adapters.items():
+        adapter.max_retries = retry
 
     if isinstance(proxies, dict):
         session.proxies = proxies
