@@ -1,4 +1,4 @@
-# template_cli
+# query_sysdig
 test query API:
 
 # usage

@@ -2,7 +2,7 @@ import argparse
 import json
 from typing import Optional
 
-from template_cli.main import main
+from query_sysdig.main import main
 
 
 if __name__ == '__main__':
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     result = main(
         domain=args.domain,
-        api_key=args.client_id,
+        api_key=args.api_key,
         proxies=proxies,
     )
 
