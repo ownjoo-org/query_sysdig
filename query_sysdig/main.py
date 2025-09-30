@@ -50,7 +50,7 @@ def get_response(
 
 
 # @timed_generator(log_progress=False, logger=logger)
-def list_results_paginated(domain: str, additional_params: Optional[dict] = None) -> Generator[dict, None, None]:
+def list_results_paginated(url: str, additional_params: Optional[dict] = None) -> Generator[dict, None, None]:
     """Fetch paginated runtime vulnerability results from the Sysdig API."""
     params: dict = {'limit': PAGE_SIZE}
     if isinstance(additional_params, dict):
@@ -58,7 +58,7 @@ def list_results_paginated(domain: str, additional_params: Optional[dict] = None
 
     should_continue: bool = True
     while should_continue:
-        data: dict = get_response(url=domain, params=params)
+        data: dict = get_response(url=url, params=params)
         yield from get_value(src=data, path=['data'], exp=list, default=[])
         params['cursor'] = get_value(src=data, path=['page', 'next'], exp=str)
         should_continue = bool(get_value(src=params, path=['cursor'], exp=str))
@@ -68,7 +68,7 @@ def list_results_paginated(domain: str, additional_params: Optional[dict] = None
 def list_runtime_results(domain: str = BASE_URL) -> Generator[dict, None, None]:
     """Fetch paginated runtime vulnerability results from the Sysdig API."""
     yield from list_results_paginated(
-        domain=f'{domain}/api/scanning/runtime/v2/workflows/results',
+        url=f'{domain}/api/scanning/runtime/v2/workflows/results',
         additional_params={
             'filter': 'asset.type="container"',
             'order': 'desc',
@@ -81,7 +81,7 @@ def list_runtime_results(domain: str = BASE_URL) -> Generator[dict, None, None]:
 def list_host_results(domain: str = BASE_URL) -> Generator[dict, None, None]:
     """Fetch paginated host results from the Sysdig API."""
     yield from list_results_paginated(
-        domain=f'{domain}/api/scanning/runtime/v2/workflows/results',
+        url=f'{domain}/api/scanning/runtime/v2/workflows/results',
         additional_params={
             'filter': 'asset.type="host"',
             'order': 'desc',
@@ -176,7 +176,7 @@ def list_enriched_details(data: dict, result_id, container_name, environment, zo
 def process_result(domain, result_id, container_name, environment, zone) -> Generator[dict, None, None]:
     """Process a single result and return parsed CVE data."""
     try:
-        # yield from fetch_result_details(url=url, result_id=result_id)
+        # yield from fetch_result_details(domain=domain, result_id=result_id)
         for result in fetch_result_details(domain=domain, result_id=result_id):
             # yield from list_parsed_cves(result, result_id, container_name, environment, zone)
             yield from list_enriched_details(result, result_id, container_name, environment, zone)
