@@ -1,0 +1,434 @@
+{
+  "uuid": "21a94089-973f-4e31-a374-8df87256fc67",
+  "lastMigration": 33,
+  "name": "Sysdig Secure",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 22222,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "08931b4d-faf8-4fdc-8c81-0ebac1c4a870",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "platform/v1/users",
+      "responses": [
+        {
+          "uuid": "31024aa7-1569-4d1b-b616-6908f026db0c",
+          "body": "{\n  \"data\": [\n    {{#if (lt (queryParam 'offset') 30)}}\n    {{#repeat (queryParam 'limit') comma=true}}\n    {\n      \"id\": {{int}},\n      \"email\": \"{{email}}\",\n      \"firstName\": \"{{firstName}}\",\n      \"lastName\": \"{{lastName}}\",\n      \"isAdmin\": {{oneOf (array true false)}},\n      \"isEnabled\": {{oneOf (array true false)}},\n      \"activationStatus\": \"confirmed\",\n      \"dateCreated\": \"{{dateTimeShift date=now format='yyyy-MM-dd HH:mm:ss' days=(int -20 -10)}}\",\n      \"lastUpdated\": \"{{dateTimeShift date=now format='yyyy-MM-dd HH:mm:ss' days=(int -20 -10)}}\",\n      \"version\": 1,\n      \"bypassSsoEnforcement\":false\n      }\n      {{/repeat}}\n      {{/if}}\n    ],\n    \"page\": {\n        \"next\": \"30\",\n        \"previous\": \"10\",\n        \"total\": 0\n    }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a7d67a7c-5ecf-48f3-ba27-ccb61f0ad2ac",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "platform/v1/users/:user_id",
+      "responses": [
+        {
+          "uuid": "6a1c9a83-7231-4668-8ad1-e8fdeb8a3e63",
+          "body": "{\n    \"id\": {{urlParam 'user_id'}},\n    \"email\": \"{{email}}\",\n    \"firstName\": \"{{firstName}}\",\n    \"lastName\": \"{{lastName}}\",\n    \"isAdmin\": {{oneOf (array true false)}},\n    \"isEnabled\": {{oneOf (array true false)}},\n    \"activationStatus\": \"confirmed\",\n    \"dateCreated\": \"{{dateTimeShift date=now format='yyyy-MM-dd HH:mm:ss' days=(int -20 -10)}}\",\n    \"lastUpdated\": \"{{dateTimeShift date=now format='yyyy-MM-dd HH:mm:ss' days=(int -20 -10)}}\",\n    \"version\": 1,\n    \"bypassSsoEnforcement\":false\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "478e9aed-0edc-427f-a689-603182e41654",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/scanning/runtime/v2/workflows/results",
+      "responses": [
+        {
+          "uuid": "286b4c55-b888-4609-92b1-b44ee019ad58",
+          "body": "{\n  \"page\": {\n    \"next\": \"\"\n  },\n  \"data\": [\n    {\n      \"exploitCount\": 27,\n      \"hasAcceptedRisk\": true,\n      \"hashId\": \"8305ef787967b963e18613a46aa46988\",\n      \"isEVEEnabled\": false,\n      \"policyEvaluationsResult\": \"failed\",\n      \"recordDetails\": {\n        \"labels\": {\n          \"asset.type\": \"container\",\n          \"container.id\": \"1b883a5d-06c7-4e90-9973-d42d9889de27\",\n          \"container.name\": \"redacted\",\n          \"container.runtime.type\": \"docker\",\n          \"host.hostName\": \"redacted\",\n          \"agent.tag.environment\": \"redacted\",\n          \"agent.tag.zone\": \"redacted\"\n        },\n        \"mainAssetName\": \"redacted\"\n      },\n      \"resourceId\": \"sha256:95ec4e892acfe06dfc9376173b208e2234c687ad3b1ba4208ca1858c141d1385\",\n      \"resultId\": \"186893489ae20da63aab7c2aa1ab2e74\",\n      \"runningVulnsBySev\": null,\n      \"vulnsBySev\": [\n        0,\n        0,\n        77,\n        720,\n        0,\n        358,\n        27,\n        0\n      ]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container asset",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "asset.type = \"container\"",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "asset.type=\"container\"",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1b9bff43-d0c9-4080-847a-ab921208c610",
+          "body": "{\n  \"page\": {\n    \"next\": \"\"\n  },\n  \"data\": [\n    {\n      \"exploitCount\": 27,\n      \"hasAcceptedRisk\": true,\n      \"hashId\": \"8305ef787967b963e18613a46aa46988\",\n      \"isEVEEnabled\": false,\n      \"policyEvaluationsResult\": \"failed\",\n      \"recordDetails\": {\n        \"labels\": {\n          \"asset.type\": \"host\",\n          \"container.id\": \"1b883a5d-06c7-4e90-9973-d42d9889de27\",\n          \"container.name\": \"redacted\",\n          \"container.runtime.type\": \"docker\",\n          \"host.hostName\": \"redacted\",\n          \"agent.tag.environment\": \"redacted\",\n          \"agent.tag.zone\": \"redacted\"\n        },\n        \"mainAssetName\": \"redacted\"\n      },\n      \"resourceId\": \"sha256:95ec4e892acfe06dfc9376173b208e2234c687ad3b1ba4208ca1858c141d1385\",\n      \"resultId\": \"186893489ae20da63aab7c2aa1ab2e74\",\n      \"runningVulnsBySev\": null,\n      \"vulnsBySev\": [\n        0,\n        0,\n        77,\n        720,\n        0,\n        358,\n        27,\n        0\n      ]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host asset",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "asset.type = \"host\"",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "asset.type=\"host\"",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7bd0af54-80d7-420b-8897-06073b2ba979",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 406,
+          "label": "default",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ba39ac84-aaba-4aab-9eed-b8ae4ecc5921",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "secure/vulnerability/v1/results/:result_id",
+      "responses": [
+        {
+          "uuid": "ce1de6e9-9654-4714-bf0a-1f3b50ad5280",
+          "body": "{\n  \"result\": {\n    \"assetType\": \"containerImage\",\n    \"baseImages\": {\n      \"a3ee5e6b4b0d3255bf\": {\n        \"pullStrings\": [\n          \"alpine:latest\"\n        ]\n      }\n    },\n    \"layers\": {\n      \"f95aa9ae66563e7e808b\": {\n        \"baseImagesRef\": [\n          \"a3ee5e6b4b0d3255bf\"\n        ],\n        \"command\": \"COPY docker-entrypoint.sh\",\n        \"digest\": \"sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\",\n        \"size\": 50\n      }\n    },\n    \"metadata\": {\n      \"architecture\": \"arm64\",\n      \"author\": \"sysdig\",\n      \"baseOs\": \"debian\",\n      \"createdAt\": \"2024-01-22T08:51:46.016464Z\",\n      \"digest\": \"sha256:77af4d6b9913e693e8d0b4b294fa62ade6054e6b2f1ffb617ac955dd63fb0182\",\n      \"imageId\": \"sha256:77af4d6b9913e693e8d0b4b294fa62ade6054e6b2f1ffb617ac955dd63fb0182\",\n      \"labels\": {\n        \"key\": \"value\"\n      },\n      \"os\": \"debian\",\n      \"pullString\": \"nginx:latest\",\n      \"size\": 10240\n    },\n    \"packages\": {\n      \"2772f8a6c73fa17\": {\n        \"isRemoved\": true,\n        \"isRunning\": true,\n        \"layerRef\": \"f95aa9ae66563e7e808b\",\n        \"license\": \"MIT\",\n        \"name\": \"openssl\",\n        \"path\": \"/usr/local/bin/openssl\",\n        \"suggestedFix\": \"1.2.3\",\n        \"type\": \"os\",\n        \"version\": \"1.2.3\",\n        \"vulnerabilitiesRefs\": [\n          \"71af37c6a8f2772\"\n        ]\n      }\n    },\n    \"policies\": {\n      \"evaluations\": [\n        {\n          \"bundles\": [\n            {\n              \"identifier\": \"severe_vulnerabilities_with_a_fix\",\n              \"name\": \"Severe vulnerabilities with a Fix\",\n              \"rules\": [\n                {\n                  \"description\": \"rule description\",\n                  \"evaluationResult\": \"passed\",\n                  \"failureType\": \"pkgVulnFailure\",\n                  \"failures\": [\n                    {\n                      \"arguments\": {\n                        \"version\": \"1.0\"\n                      },\n                      \"description\": \"failure description\",\n                      \"packageRef\": \"p-1234123\",\n                      \"remediation\": \"update image\",\n                      \"riskAcceptRefs\": [\n                        \"ra-1234123\"\n                      ],\n                      \"vulnerabilityRef\": \"vuln-12031024120910259\"\n                    },\n                    {\n                      \"description\": \"description\",\n                      \"packageRef\": \"2772f8a6c73fa17\",\n                      \"riskAcceptRefs\": [\n                        \"e6b4b0d3255bfef\"\n                      ],\n                      \"vulnerabilityRef\": \"71af37c6a8f2772\"\n                    }\n                  ],\n                  \"predicates\": [\n                    {\n                      \"extra\": {},\n                      \"type\": \"vulnIsFixable\"\n                    }\n                  ],\n                  \"ruleId\": \"1234A\",\n                  \"ruleType\": \"vulnDenyList\"\n                }\n              ],\n              \"type\": \"predefined\"\n            }\n          ],\n          \"createdAt\": \"2024-01-22T08:51:46.016464Z\",\n          \"description\": \"description\",\n          \"evaluation\": \"passed\",\n          \"identifier\": \"550e8400-e29b\",\n          \"name\": \"policy-0\",\n          \"updatedAt\": \"2024-01-22T08:51:46.016464Z\"\n        }\n      ],\n      \"globalEvaluation\": \"passed\"\n    },\n    \"producer\": {\n      \"producedAt\": \"2024-01-22T08:51:46Z\"\n    },\n    \"riskAccepts\": {\n      \"e6b4b0d3255bfef\": {\n        \"context\": [\n          {\n            \"type\": \"imageName\",\n            \"value\": \"nginx:latest\"\n          }\n        ],\n        \"createdAt\": \"2024-01-22T08:51:46.016464Z\",\n        \"description\": \"description\",\n        \"entityType\": \"imageName\",\n        \"entityValue\": \"nginx:latest\",\n        \"expirationDate\": \"2021-07-01\",\n        \"id\": \"550e8400-e29b\",\n        \"reason\": \"RiskMitigated\",\n        \"status\": \"active\",\n        \"updatedAt\": \"2024-01-22T08:51:46.016464Z\"\n      }\n    },\n    \"stage\": \"pipeline\",\n    \"vulnerabilities\": {\n      \"71af37c6a8f2772\": {\n        \"cisaKev\": {\n          \"dueDate\": \"2023-10-31\",\n          \"knownRansomwareCampaignUse\": \"false\",\n          \"publishDate\": \"2023-12-06\"\n        },\n        \"cvssScore\": {\n          \"score\": 1,\n          \"vector\": \"AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\",\n          \"version\": \"3.0\"\n        },\n        \"disclosureDate\": \"2021-01-02\",\n        \"exploit\": {\n          \"links\": [\n            \"https://sysdig-example.com/exploits/12345\"\n          ],\n          \"publicationDate\": \"2024-01-22T08:51:46.00Z\"\n        },\n        \"exploitable\": true,\n        \"fixVersion\": \"1.2.3\",\n        \"mainProvider\": \"vulndb\",\n        \"name\": \"CVE-2021-1234\",\n        \"packageRef\": \"2772f8a6c73fa17\",\n        \"providersMetadata\": {\n          \"nvd\": {}\n        },\n        \"riskAcceptRefs\": [\n          \"e6b4b0d3255bfef\"\n        ],\n        \"severity\": \"high\",\n        \"solutionDate\": \"2021-01-02\"\n      }\n    }\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "84b65905-318f-4736-903d-7cf029cf9195",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "secure/inventory/v1/resources",
+      "responses": [
+        {
+          "uuid": "feaa0c9b-13f1-486d-805b-c03a0035f106",
+          "body": "{\n  \"data\": [\n    {\n      \"category\": \"Compute\",\n      \"configApiEndpoint\": \"/api/cspm/v1/kube/resource?resourceHash=62e348b71acd7be14a4bdfcc&resourceKind=DaemonSet\",\n      \"containerInfo\": [\n        {\n          \"containerId\": \"1b883a5d-06c7-4e90-9973-d42d9889de27\",\n          \"containerName\": \"my-app\",\n          \"podName\": \"nginx\",\n          \"pullString\": \"redis/redis:1.0.0\"\n        }\n      ],\n      \"hash\": \"62e348b71acd7be14a4bdfcc\",\n      \"inUseVulnerabilitySummary\": {\n        \"criticalSeverityCount\": 1,\n        \"hasExploit\": true,\n        \"highSeverityCount\": 2,\n        \"lowSeverityCount\": 4,\n        \"mediumSeverityCount\": 3,\n        \"negligibleSeverityCount\": 5\n      },\n      \"isExposed\": true,\n      \"labels\": [\n        \"env:Prod\"\n      ],\n      \"lastSeen\": 1660742138,\n      \"metadata\": {\n        \"cluster\": \"risks-aws-eks-liverisks\",\n        \"containerNames\": [\n          \"kube-proxy\"\n        ],\n        \"distribution\": \"EKS\",\n        \"distributionVersion\": \"1.29\",\n        \"imagesCount\": \"1\",\n        \"namespace\": \"kube-system\",\n        \"pullStrings\": [\n          \"602401143452.dkr.ecr.us-east-1.amazonaws.com/eks/kube-proxy:v1.29.0-minimal-eksbuild.1\"\n        ]\n      },\n      \"name\": \"kube-proxy\",\n      \"platform\": \"Kubernetes\",\n      \"postureControlSummaryApiEndpoint\": \"/api/cspm/v1/kube/resource?fields=posturecontrolsummary%2Chash%2Cname%2Cplatform%2Ctype%2Cmetadata%2Cresourceorigin%2Ccategory%2Clastseen&resourceHash=62e348b71acd7be14a4bdfcc&resourceKind=DaemonSet\",\n      \"posturePolicySummary\": {\n        \"passPercentage\": 0,\n        \"policies\": [\n          {\n            \"id\": 2,\n            \"isPassed\": false,\n            \"name\": \"Sysdig Kubernetes\"\n          }\n        ]\n      },\n      \"resourceOrigin\": \"Deployed\",\n      \"type\": \"DaemonSet\",\n      \"validatedExposure\": true,\n      \"vmApiEndpoint\": \"/api/scanning/runtime/v2/workflows/results?cursor&filter=freeText%20in%20%28%222cfced35cf83d6cdcdcd2f4ac103ab620976cb507be8779a53224d31d2a1f227%22%29&limit=100&order=desc&sort=runningVulnsBySev&zones\",\n      \"vulnerabilitySummary\": {\n        \"criticalSeverityCount\": 1,\n        \"hasExploit\": true,\n        \"highSeverityCount\": 2,\n        \"lowSeverityCount\": 4,\n        \"mediumSeverityCount\": 3,\n        \"negligibleSeverityCount\": 5\n      },\n      \"zones\": [\n        {\n          \"id\": 1,\n          \"name\": \"Entire Infrastructure\"\n        }\n      ]\n    }\n  ],\n  \"page\": {\n    \"next\": 3,\n    \"previous\": 1,\n    \"total\": 5\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container asset",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fddadf4d-162c-40b4-a358-7ae9fd638096",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 406,
+          "label": "default",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d916bf87-955d-49ba-9674-4a487235b952",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "secure/vulnerability/v1/runtime-results",
+      "responses": [
+        {
+          "uuid": "ab40e88d-d54e-45e9-ba63-b8362e7c4113",
+          "body": "{\n  \"data\": [\n    {\n      \"isRiskSpotlightEnabled\": true,\n      \"mainAssetName\": \"nginx:latest\",\n      \"policyEvaluationResult\": \"passed\",\n      \"resourceId\": \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6\",\n      \"resultId\": \"scan-1234\",\n      \"runningVulnTotalBySeverity\": {\n        \"critical\": 12345,\n        \"high\": 12345,\n        \"low\": 12345,\n        \"medium\": 12345,\n        \"negligible\": 12345\n      },\n      \"sbomId\": \"sbom-1234\",\n      \"scope\": {\n        \"asset.type\": \"workload\",\n        \"kubernetes.cluster.name\": \"prod-cluster-00\",\n        \"kubernetes.namespace.name\": \"foo\",\n        \"kubernetes.workload.name\": \"bar\",\n        \"kubernetes.workload.type\": \"deployment\"\n      },\n      \"vulnTotalBySeverity\": {\n        \"critical\": 12345,\n        \"high\": 12345,\n        \"low\": 12345,\n        \"medium\": 12345,\n        \"negligible\": 12345\n      }\n    }\n  ],\n  \"page\": {\n    \"next\": \"\",\n    \"total\": 1\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9a888716-15bc-4ddf-a70e-4ee5f265f926",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "secure/vulnerability/v1/registry-results",
+      "responses": [
+        {
+          "uuid": "aa75c5af-2fae-4ba9-8c7e-58cab5728157",
+          "body": "{\n  \"data\": [\n    {\n      \"createdAt\": \"2024-01-22T08:51:46.016464Z\",\n      \"imageId\": \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6\",\n      \"pullString\": \"index.docker.io/nginx:latest\",\n      \"resultId\": \"scan-1234\",\n      \"vendor\": \"dockerv2\",\n      \"vulnTotalBySeverity\": {\n        \"critical\": 12345,\n        \"high\": 12345,\n        \"low\": 12345,\n        \"medium\": 12345,\n        \"negligible\": 12345\n      }\n    }\n  ],\n  \"page\": {\n    \"next\": \"\",\n    \"total\": 1\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b27fe0bd-2b35-4c01-8aa0-0ee45621beb5",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "secure/vulnerability/v1/pipeline-results",
+      "responses": [
+        {
+          "uuid": "817f0fb1-dd30-4024-88dd-d9e1f4689b05",
+          "body": "{\n  \"data\": [\n    {\n      \"createdAt\": \"2024-01-22T08:51:46.016464Z\",\n      \"imageId\": \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6\",\n      \"policyEvaluationResult\": \"passed\",\n      \"pullString\": \"nginx:latest\",\n      \"resultId\": \"scan-1234\",\n      \"vulnTotalBySeverity\": {\n        \"critical\": 12345,\n        \"high\": 12345,\n        \"low\": 12345,\n        \"medium\": 12345,\n        \"negligible\": 12345\n      }\n    }\n  ],\n  \"page\": {\n    \"next\": \"\",\n    \"total\": 1\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "08931b4d-faf8-4fdc-8c81-0ebac1c4a870"
+    },
+    {
+      "type": "route",
+      "uuid": "a7d67a7c-5ecf-48f3-ba27-ccb61f0ad2ac"
+    },
+    {
+      "type": "route",
+      "uuid": "478e9aed-0edc-427f-a689-603182e41654"
+    },
+    {
+      "type": "route",
+      "uuid": "ba39ac84-aaba-4aab-9eed-b8ae4ecc5921"
+    },
+    {
+      "type": "route",
+      "uuid": "84b65905-318f-4736-903d-7cf029cf9195"
+    },
+    {
+      "type": "route",
+      "uuid": "d916bf87-955d-49ba-9674-4a487235b952"
+    },
+    {
+      "type": "route",
+      "uuid": "9a888716-15bc-4ddf-a70e-4ee5f265f926"
+    },
+    {
+      "type": "route",
+      "uuid": "b27fe0bd-2b35-4c01-8aa0-0ee45621beb5"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
