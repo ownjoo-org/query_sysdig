@@ -50,7 +50,7 @@ def get_response(
 
 
 # @timed_generator(log_progress=False, logger=logger)
-def list_results_paginated(url: str, additional_params: Optional[dict] = None) -> Generator[dict, None, None]:
+def list_results_paginated(domain: str, additional_params: Optional[dict] = None) -> Generator[dict, None, None]:
     """Fetch paginated runtime vulnerability results from the Sysdig API."""
     params: dict = {'limit': PAGE_SIZE}
     if isinstance(additional_params, dict):
@@ -58,17 +58,17 @@ def list_results_paginated(url: str, additional_params: Optional[dict] = None) -
 
     should_continue: bool = True
     while should_continue:
-        data: dict = get_response(url=url, params=params)
+        data: dict = get_response(url=domain, params=params)
         yield from get_value(src=data, path=['data'], exp=list, default=[])
         params['cursor'] = get_value(src=data, path=['page', 'next'], exp=str)
         should_continue = bool(get_value(src=params, path=['cursor'], exp=str))
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
-def list_runtime_results(url: str = BASE_URL) -> Generator[dict, None, None]:
+def list_runtime_results(domain: str = BASE_URL) -> Generator[dict, None, None]:
     """Fetch paginated runtime vulnerability results from the Sysdig API."""
     yield from list_results_paginated(
-        url=f'{url}/api/scanning/runtime/v2/workflows/results',
+        domain=f'{domain}/api/scanning/runtime/v2/workflows/results',
         additional_params={
             'filter': 'asset.type="container"',
             'order': 'desc',
@@ -78,10 +78,10 @@ def list_runtime_results(url: str = BASE_URL) -> Generator[dict, None, None]:
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
-def list_host_results(url: str = BASE_URL) -> Generator[dict, None, None]:
+def list_host_results(domain: str = BASE_URL) -> Generator[dict, None, None]:
     """Fetch paginated host results from the Sysdig API."""
     yield from list_results_paginated(
-        url=f'{url}/api/scanning/runtime/v2/workflows/results',
+        domain=f'{domain}/api/scanning/runtime/v2/workflows/results',
         additional_params={
             'filter': 'asset.type="host"',
             'order': 'desc',
@@ -91,10 +91,10 @@ def list_host_results(url: str = BASE_URL) -> Generator[dict, None, None]:
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
-def fetch_result_details(url: str = BASE_URL, result_id: str = '') -> Generator[dict, None, None]:
+def fetch_result_details(domain: str = BASE_URL, result_id: str = '') -> Generator[dict, None, None]:
     """Fetch detailed information for a specific result ID."""
     yield get_response(
-        url=f'{url}/secure/vulnerability/v1/results/{result_id}',
+        url=f'{domain}/secure/vulnerability/v1/results/{result_id}',
     )
 
 
@@ -173,11 +173,11 @@ def list_enriched_details(data: dict, result_id, container_name, environment, zo
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
-def process_result(url, result_id, container_name, environment, zone) -> Generator[dict, None, None]:
+def process_result(domain, result_id, container_name, environment, zone) -> Generator[dict, None, None]:
     """Process a single result and return parsed CVE data."""
     try:
         # yield from fetch_result_details(url=url, result_id=result_id)
-        for result in fetch_result_details(url=url, result_id=result_id):
+        for result in fetch_result_details(domain=domain, result_id=result_id):
             # yield from list_parsed_cves(result, result_id, container_name, environment, zone)
             yield from list_enriched_details(result, result_id, container_name, environment, zone)
     except Exception as e:
@@ -185,14 +185,14 @@ def process_result(url, result_id, container_name, environment, zone) -> Generat
 
 
 @timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
-def list_results(url: str) -> Generator[dict, None, None]:
+def list_results(domain: str) -> Generator[dict, None, None]:
     """Main function to fetch, process, and save vulnerability data."""
 
     # Create a map of all host info first
     host_info: dict = {}
 
     # collect all host information
-    for record in list_host_results(url=url):
+    for record in list_host_results(domain=domain):
         if host_name := get_value(src=record, path=['recordDetails', 'labels', 'host.hostName'], exp=str):
             host_info[host_name]: dict = {
                 'environment': get_value(
@@ -208,7 +208,7 @@ def list_results(url: str) -> Generator[dict, None, None]:
             }
 
     # yield containers with environment, zone and CVEs
-    for record in list_runtime_results(url=url):
+    for record in list_runtime_results(domain=domain):
         host_name: str = get_value(src=record, path=['recordDetails', 'labels', 'host.hostName'], exp=str)
         container_name: str = get_value(src=record, path=['recordDetails', 'labels', 'container.name'], exp=str)
 
@@ -216,36 +216,28 @@ def list_results(url: str) -> Generator[dict, None, None]:
             continue
 
         yield from process_result(
-            url=url,
+            domain=domain,
             result_id=get_value(src=record, path=['resultId'], exp=str),
             container_name=container_name,
             environment=get_value(src=host_info, path=[host_name, 'environment'], exp=str, default='unknown'),
             zone=get_value(src=host_info, path=[host_name, 'zone'], exp=str, default='unknown'),
         )
 
-def main(
-    domain: str,
-    api_key: str,
-    proxies: Optional[dict] = None,
-) -> Generator[dict, None, None]:
+def main(domain: str, api_key: str, proxies: Optional[dict] = None) -> Generator[dict, None, None]:
     global session
     session = Session()
-    retries: Retry = Retry(
-        total=RETRY_COUNT,
-        backoff_factor=BACK_OFF,
-        status_forcelist=[502, 503, 504],
+    session.proxies.update(proxies or {})
+    session.headers.update(
+        {
+            'Accept': 'application/json',
+            'Authorization': f'Bearer {api_key}',
+        }
     )
-    for scheme, adapter in session.adapters.items():
-        adapter.max_retries = retries
+    for adapter in session.adapters.values():
+        adapter.max_retries = Retry(
+            total=RETRY_COUNT,
+            backoff_factor=BACK_OFF,
+            status_forcelist=[502, 503, 504],
+        )
 
-    if isinstance(proxies, dict):
-        session.proxies = proxies
-
-    headers: dict = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}',
-    }
-    session.headers.update(headers)
-
-    return list_results(url=domain)
+    return list_results(domain=domain)
