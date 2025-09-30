@@ -223,6 +223,7 @@ def list_results(base_url: str) -> Generator[dict, None, None]:
             zone=get_value(src=host_info, path=[host_name, 'zone'], exp=str, default='unknown'),
         )
 
+
 def main(base_url: str, api_key: str, proxies: Optional[dict] = None) -> Generator[dict, None, None]:
     global session
     session = Session()
