@@ -229,7 +229,7 @@ def main(
     domain: str,
     api_key: str,
     proxies: Optional[dict] = None,
-) -> Union[None, str, list, dict]:
+) -> Generator[dict, None, None]:
     global session
     session = Session()
     retry: Retry = Retry(
@@ -250,4 +250,4 @@ def main(
     }
     session.headers.update(headers)
 
-    return list(list_results(url=domain))
+    return list_results(url=domain)
