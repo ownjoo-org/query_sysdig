@@ -231,8 +231,8 @@ def main(
     global session
     session = Session()
     retries: Retry = Retry(
-        total=3,
-        backoff_factor=0.1,
+        total=RETRY_COUNT,
+        backoff_factor=BACK_OFF,
         status_forcelist=[502, 503, 504],
     )
     for scheme, adapter in session.adapters.items():
