@@ -15,12 +15,6 @@ from requests.exceptions import HTTPError
 from retry import retry
 from urllib3 import Retry
 
-logging.basicConfig(
-    format=LOG_FORMAT,
-    level=logging.INFO,
-    datefmt=TimeFormats.date_and_time.value,
-    stream=sys.stderr,
-)
 logger = logging.getLogger(__name__)
 
 session: Optional[Session] = None
@@ -73,6 +67,28 @@ def list_runtime_results(base_url: str = BASE_URL) -> Generator[dict, None, None
             'filter': 'asset.type="container"',
             'order': 'desc',
             'sort': 'runningVulnsBySev'
+        },
+    )
+
+
+@timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
+def list_hosts(base_url: str = BASE_URL) -> Generator[dict, None, None]:
+    """Fetch paginated host results from the Sysdig API."""
+    yield from list_results_paginated(
+        url=f'{base_url}/secure/inventory/v1/resources',
+        additional_params={
+            'filter': 'type="host"',
+        },
+    )
+
+
+@timed_generator(log_progress=LOG_PROGRESS, log_progress_interval=LOG_PROGRESS_INTERVAL, logger=logger)
+def list_containers(base_url: str = BASE_URL) -> Generator[dict, None, None]:
+    """Fetch paginated host results from the Sysdig API."""
+    yield from list_results_paginated(
+        url=f'{base_url}/secure/inventory/v1/resources',
+        additional_params={
+            'filter': 'type="container"',
         },
     )
 
@@ -241,4 +257,6 @@ def main(base_url: str, api_key: str, proxies: Optional[dict] = None) -> Generat
             status_forcelist=[502, 503, 504],
         )
 
-    return list_results(base_url=base_url)
+    yield from list_results(base_url=base_url)
+    yield from list_hosts(base_url=base_url)
+    yield from list_containers(base_url=base_url)

@@ -1,6 +1,11 @@
 import argparse
 import json
+import logging
+from sys import stderr
 from typing import Optional
+
+from ownjoo_utils.logging.consts import LOG_FORMAT
+from ownjoo_utils.parsing.consts import TimeFormats
 
 from query_sysdig.main import main
 
@@ -29,8 +34,23 @@ if __name__ == '__main__':
         required=False,
         help="JSON structure specifying 'http' and 'https' proxy URLs",
     )
+    parser.add_argument(
+        '--log-level',
+        type=int,
+        required=False,
+        help="log level (0-60)",
+        default=logging.INFO,
+        dest='log_level',
+    )
 
     args = parser.parse_args()
+
+    logging.basicConfig(
+        format=LOG_FORMAT,
+        level=args.log_level,
+        datefmt=TimeFormats.date_and_time.value,
+        stream=stderr,
+    )
 
     proxies: Optional[dict] = None
     if proxies:
