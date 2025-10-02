@@ -27,3 +27,6 @@ UUID_PATTERN = re.compile(UUID_REX)
 
 CVE_ID_REX: str = r'^CVE-(1999|2\d{3})-(0\d{2}[1-9]|[1-9]\d{3,})$'
 CVE_ID_PATTERN: re.Pattern = re.compile(CVE_ID_REX)
+
+# persistence
+DB_LOCATION: str = ':memory:'
